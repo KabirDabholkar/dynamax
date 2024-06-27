@@ -6,6 +6,7 @@ bin/
 lib/
 share/
 etc/
+.idea/
 
 
 *egg-info
