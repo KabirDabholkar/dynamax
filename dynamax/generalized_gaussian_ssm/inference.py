@@ -9,14 +9,14 @@ from typing import NamedTuple, Optional, Union, Callable
 
 from dynamax.utils.utils import psd_solve
 from dynamax.generalized_gaussian_ssm.models import ParamsGGSSM
-from dynamax.linear_gaussian_ssm.inference import PosteriorGSSMFiltered, PosteriorGSSMSmoothed
+from dynamax.linear_gaussian_ssm.inference import PosteriorGSSMFiltered, PosteriorGSSMSmoothed, ParamsLGSSM
+from dynamax.parameters import ParameterProperties
 
 # Helper functions
 _get_params = lambda x, dim, t: x[t] if x.ndim == dim + 1 else x
 _process_fn = lambda f, u: (lambda x, y: f(x)) if u is None else f
 _process_input = lambda x, y: jnp.zeros((y,)) if x is None else x
 _jacfwd_2d = lambda f, x: jnp.atleast_2d(jacfwd(f)(x))
-
 
 
 class EKFIntegrals(NamedTuple):

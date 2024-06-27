@@ -2,6 +2,11 @@ __pycache__/
 docs/_build/
 build/
 dist/
+bin/
+lib/
+share/
+etc/
+
 
 *egg-info
 *.ipynb_checkpoints
