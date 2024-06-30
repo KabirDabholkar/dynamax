@@ -5,6 +5,8 @@ import tensorflow_probability.substrates.jax as tfp
 
 tfd = tfp.distributions
 
+import numpy as np
+
 from tensorflow_probability.substrates.jax.distributions import MultivariateNormalFullCovariance as MVN
 
 from dynamax.linear_gaussian_ssm.inference import ParamsLGSSM, ParamsLGSSMInitial, ParamsLGSSMDynamics, ParamsLGSSMEmissions
@@ -130,8 +132,13 @@ def test_poisson_emission2(key, kwargs):
     model = PoissonLinearGaussianSSM(state_dim, emission_dim)
 
     params, param_props = model.initialize(keys[1])
+    student_params, student_param_props = model.initialize(keys[2])
 
+    states, emissions = model.sample(params, keys[2], num_timesteps=NUM_TIMESTEPS)
 
+    # assert np.array(emissions).is_integer().all()
+    assert np.all(np.isclose(emissions,emissions.astype(int)))
+    fitted_params, lps = model.fit_sgd(student_params, student_param_props, emissions, num_epochs=3)
 
 
 
