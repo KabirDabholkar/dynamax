@@ -18,7 +18,7 @@ from jax.random import PRNGKey
 from typing import Tuple
 import jax.numpy as jnp
 from dynamax.utils.bijectors import RealToPSDBijector
-from dynamax.generalized_gaussian_ssm.models import ParamsGGSSM
+
 from dynamax.linear_gaussian_ssm.models import ParamsLGSSM, LinearGaussianSSM, PosteriorGSSMFiltered
 from dynamax.parameters import ParameterProperties, ParameterSet
 from dynamax.linear_gaussian_ssm.inference import preprocess_params_and_inputs, _get_params, _get_one_param, tree_map, lax

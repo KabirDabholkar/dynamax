@@ -1,3 +1,4 @@
+
 from jaxtyping import Array, Float
 import tensorflow_probability.substrates.jax as tfp
 from typing import NamedTuple, Optional, Union, Callable
@@ -9,8 +10,6 @@ MVN = tfd.MultivariateNormalFullCovariance
 from dynamax.ssm import SSM
 from dynamax.nonlinear_gaussian_ssm.models import FnStateToState, FnStateAndInputToState
 from dynamax.nonlinear_gaussian_ssm.models import FnStateToEmission, FnStateAndInputToEmission
-
-
 
 FnStateToEmission2 = Callable[[Float[Array, "state_dim"]], Float[Array, "emission_dim emission_dim"]]
 FnStateAndInputToEmission2 = Callable[[Float[Array, "state_dim"], Float[Array, "input_dim"]], Float[Array, "emission_dim emission_dim"]]
@@ -51,6 +50,7 @@ class ParamsGGSSM(NamedTuple):
     emission_mean_function: Union[FnStateToEmission, FnStateAndInputToEmission]
     emission_cov_function: Union[FnStateToEmission2, FnStateAndInputToEmission2]
     emission_dist: EmissionDistFn = lambda mean, cov: MVN(loc=mean, covariance_matrix=cov)
+
 
 
 class GeneralizedGaussianSSM(SSM):
@@ -129,4 +129,3 @@ class GeneralizedGaussianSSM(SSM):
             mean = h(state, inputs)
             cov = R(state, inputs)
         return params.emission_dist(mean, cov)
-

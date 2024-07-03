@@ -23,44 +23,44 @@ CONFIGS = [
     (jr.PRNGKey(2), dict(state_dim=10, emission_dim=7)),
 ]
 
-# @pytest.mark.parametrize(["key", "kwargs"], CONFIGS)
-# def test_poisson_emission(key, kwargs):
-#     keys = jr.split(key, 3)
-#     state_dim = kwargs['state_dim']
-#     emission_dim = 1 # Univariate Poisson
-#     poisson_weights = jr.normal(keys[0], shape=(emission_dim, state_dim))
-#     model = GeneralizedGaussianSSM(state_dim, emission_dim)
-#
-#     # Define model parameters with Poisson emission
-#     pois_params = ParamsGGSSM(
-#         initial_mean=jr.normal(keys[1], (state_dim,)),
-#         initial_covariance=jnp.eye(state_dim),
-#         dynamics_function=lambda z: 0.99 * z,
-#         dynamics_covariance=0.001*jnp.eye(state_dim),
-#         emission_mean_function=lambda z: jnp.exp(poisson_weights @ z),
-#         emission_cov_function = lambda z: jnp.exp(poisson_weights @ z),
-#         emission_dist=lambda mu, Sigma: tfd.Poisson(log_rate = jnp.log(mu))
-#     )
-#     _, emissions = model.sample(pois_params, keys[2], num_timesteps=NUM_TIMESTEPS)
-#
-#     # Define model parameters with default Gaussian emission
-#     gaussian_params = ParamsGGSSM(
-#         initial_mean=jr.normal(keys[1], (state_dim,)),
-#         initial_covariance=jnp.eye(state_dim),
-#         dynamics_function=lambda z: 0.99 * z,
-#         dynamics_covariance=0.001*jnp.eye(state_dim),
-#         emission_mean_function=lambda z: jnp.exp(poisson_weights @ z),
-#         emission_cov_function=lambda z: jnp.exp(poisson_weights @ z)
-#     )
-#
-#     # Fit model with Poisson emission
-#     pois_marginal_lls = conditional_moments_gaussian_filter(pois_params, EKFIntegrals(), emissions).marginal_loglik
-#
-#     # Fit model with Gaussian emission
-#     gaussian_marginal_lls = conditional_moments_gaussian_filter(gaussian_params, EKFIntegrals(), emissions).marginal_loglik
-#
-#     # Check that the marginal log-likelihoods under Poisson emission are higher
-#     assert pois_marginal_lls > gaussian_marginal_lls
+@pytest.mark.parametrize(["key", "kwargs"], CONFIGS)
+def test_poisson_emission(key, kwargs):
+    keys = jr.split(key, 3)
+    state_dim = kwargs['state_dim']
+    emission_dim = 1 # Univariate Poisson
+    poisson_weights = jr.normal(keys[0], shape=(emission_dim, state_dim))
+    model = GeneralizedGaussianSSM(state_dim, emission_dim)
+
+    # Define model parameters with Poisson emission
+    pois_params = ParamsGGSSM(
+        initial_mean=jr.normal(keys[1], (state_dim,)),
+        initial_covariance=jnp.eye(state_dim),
+        dynamics_function=lambda z: 0.99 * z,
+        dynamics_covariance=0.001*jnp.eye(state_dim),
+        emission_mean_function=lambda z: jnp.exp(poisson_weights @ z),
+        emission_cov_function = lambda z: jnp.exp(poisson_weights @ z),
+        emission_dist=lambda mu, Sigma: tfd.Poisson(log_rate = jnp.log(mu))
+    )
+    _, emissions = model.sample(pois_params, keys[2], num_timesteps=NUM_TIMESTEPS)
+
+    # Define model parameters with default Gaussian emission
+    gaussian_params = ParamsGGSSM(
+        initial_mean=jr.normal(keys[1], (state_dim,)),
+        initial_covariance=jnp.eye(state_dim),
+        dynamics_function=lambda z: 0.99 * z,
+        dynamics_covariance=0.001*jnp.eye(state_dim),
+        emission_mean_function=lambda z: jnp.exp(poisson_weights @ z),
+        emission_cov_function=lambda z: jnp.exp(poisson_weights @ z)
+    )
+
+    # Fit model with Poisson emission
+    pois_marginal_lls = conditional_moments_gaussian_filter(pois_params, EKFIntegrals(), emissions).marginal_loglik
+
+    # Fit model with Gaussian emission
+    gaussian_marginal_lls = conditional_moments_gaussian_filter(gaussian_params, EKFIntegrals(), emissions).marginal_loglik
+
+    # Check that the marginal log-likelihoods under Poisson emission are higher
+    assert pois_marginal_lls > gaussian_marginal_lls
 
 
 # @pytest.mark.parametrize(["key", "kwargs"], CONFIGS)
@@ -123,7 +123,7 @@ CONFIGS = [
 
 
 @pytest.mark.parametrize(["key", "kwargs"], CONFIGS)
-def test_poisson_emission2(key, kwargs):
+def test_poisson_emission_with_fit_sgd(key, kwargs):
     keys = jr.split(key, 3)
     state_dim = kwargs['state_dim']
     input_dim = 0
@@ -138,9 +138,27 @@ def test_poisson_emission2(key, kwargs):
 
     # assert np.array(emissions).is_integer().all()
     assert np.all(np.isclose(emissions,emissions.astype(int)))
-    fitted_params, lps = model.fit_sgd(student_params, student_param_props, emissions, num_epochs=3)
+    fitted_params, lps = model.fit_sgd(student_params, student_param_props, emissions, num_epochs=100)
 
 
+    # import matplotlib.pyplot as plt
+    # titles = ['params.dynamics.bias', 'params.dynamics.weights', 'params.dynamics.cov', 'params.emissions.bias', 'params.emissions.weights', 'params.emissions.cov']
+    # param_list = [
+    #     [params.dynamics.bias, params.dynamics.weights, params.dynamics.cov, params.emissions.bias, params.emissions.weights, params.emissions.cov]
+    #     for params in [student_params,fitted_params]
+    # ]
+    # param_list = zip(*param_list)
+    #
+    # fig,axs = plt.subplots(2,3, figsize=(10,6))
+    # for ax,params,title in zip(axs.flatten(),param_list,titles):
+    #     # a,b = param_list
+    #     ax.scatter(*params)
+    #     ax.set_title(title)
+    #
+    #
+    # fig.tight_layout()
+    # fig.savefig('test.png')
+    # plt.close(fig)
 
 
 # @pytest.mark.parametrize(["key", "kwargs"], CONFIGS)
