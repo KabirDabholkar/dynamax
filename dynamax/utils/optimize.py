@@ -22,6 +22,7 @@ def run_sgd(loss_fn,
             params,
             dataset,
             optimizer=optax.adam(1e-3),
+            init_opt_state = None,
             batch_size=1,
             num_epochs=50,
             shuffle=False,
@@ -47,7 +48,7 @@ def run_sgd(loss_fn,
         hmm: HMM with optimized parameters.
         losses: Output of loss_fn stored at each step.
     """
-    opt_state = optimizer.init(params)
+    opt_state = optimizer.init(params) if init_opt_state is None else init_opt_state
     num_batches = pytree_len(dataset)
     num_complete_batches, leftover = jnp.divmod(num_batches, batch_size)
     num_batches = num_complete_batches + jnp.where(leftover == 0, 0, 1)
@@ -77,8 +78,8 @@ def run_sgd(loss_fn,
         return (params, opt_state), avg_loss
 
     keys = jr.split(key, num_epochs)
-    (params, _), losses = lax.scan(train_step, (params, opt_state), keys)
-    return params, losses
+    (params, opt_state), losses = lax.scan(train_step, (params, opt_state), keys)
+    return params, opt_state, losses
 
 
 def run_gradient_descent(objective,
