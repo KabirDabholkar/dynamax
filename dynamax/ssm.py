@@ -409,6 +409,7 @@ class SSM(ABC):
         inputs: Optional[Union[Float[Array, "num_timesteps input_dim"],
                                Float[Array, "num_batches num_timesteps input_dim"]]]=None,
         optimizer: optax.GradientTransformation=optax.adam(1e-3),
+        init_opt_state = None,
         batch_size: int=1,
         num_epochs: int=50,
         shuffle: bool=False,
@@ -458,14 +459,15 @@ class SSM(ABC):
             return -lp / batch_emissions.size
 
         dataset = (batch_emissions, batch_inputs)
-        unc_params, losses = run_sgd(_loss_fn,
+        unc_params, opt_state, losses = run_sgd(_loss_fn,
                                      unc_params,
                                      dataset,
                                      optimizer=optimizer,
+                                     init_opt_state=init_opt_state,
                                      batch_size=batch_size,
                                      num_epochs=num_epochs,
                                      shuffle=shuffle,
                                      key=key)
 
         params = from_unconstrained(unc_params, props)
-        return params, losses
+        return params, opt_state, losses
